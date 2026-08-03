@@ -24,8 +24,8 @@ enum CellState {
 async fn main() {
     let mut cells: Vec<Cell> = Vec::with_capacity(GRID_W * GRID_H);
 
-    for x in 1..=GRID_W {
-        for y in 1..=GRID_H {
+    for x in 0..GRID_W {
+        for y in 0..GRID_H {
             cells.push(Cell {
                 x,
                 y,
@@ -34,7 +34,7 @@ async fn main() {
         }
     }
 
-    println!("{:#?}", cells);
+    // println!("{:#?}", cells);
 
     loop {
         clear_background(BLACK);
@@ -43,7 +43,22 @@ async fn main() {
 
         // draw grid
         //
-        for cell in cells.clone() {}
+        for cell in &cells {
+            let color = match cell.state {
+                CellState::Empty => LIGHTGRAY,
+                CellState::Start => GREEN,
+                CellState::Goal => YELLOW,
+                CellState::Wall => BROWN,
+                CellState::Path => BLUE,
+            };
+            draw_rectangle(
+                cell.x as f32 * cell_size,
+                cell.y as f32 * cell_size,
+                cell_size - 1.0,
+                cell_size - 1.0,
+                color,
+            );
+        }
 
         draw_text("PathFinder", 20.0, 20.0, 30.0, WHITE);
 
