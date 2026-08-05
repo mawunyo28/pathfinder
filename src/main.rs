@@ -115,7 +115,28 @@ async fn main() {
         if solve {
             let current = open.pop().unwrap().pos;
 
-            if current == goal {}
+            if current == goal {
+                let mut path = vec![current];
+
+                let mut node = current;
+
+                while let Some(&prev) = came_from.get(&node) {
+                    path.push(prev);
+                    node = prev;
+                }
+
+                path.reverse();
+
+                for pos in &path {
+                    let index = pos.0 * GRID_H + pos.1;
+
+                    if *cells[index].state() != CellState::Start
+                        && *cells[index].state() != CellState::Goal
+                    {
+                        cells[index].set_state(CellState::Path);
+                    }
+                }
+            }
 
             for neighbour in neighbors_of(current, &cells) {
                 let neighbour = neighbour;
@@ -138,6 +159,8 @@ async fn main() {
                     open.push(NodeCost { pos: neighbour, f });
                 }
             }
+
+            closed.insert(current);
         }
 
         draw_text("PathFinder", 20.0, 20.0, 30.0, WHITE);
