@@ -1,3 +1,5 @@
+use std::collections::{BinaryHeap, HashMap, HashSet};
+
 use macroquad::prelude::*;
 use pathfinder::{
     AppState,
@@ -8,9 +10,28 @@ const GRID_W: usize = 40;
 
 const GRID_H: usize = 30;
 
+#[derive(PartialEq, PartialOrd, Ord, Eq, Debug)]
+struct NodeCost {
+    pos: (usize, usize),
+    f: i32,
+}
+
 #[macroquad::main("Pathfinder")]
 async fn main() {
     let mut cells: Vec<Cell> = Vec::with_capacity(GRID_W * GRID_H);
+
+    let mut open: BinaryHeap<NodeCost> = BinaryHeap::new();
+
+    let mut closed: HashSet<(usize, usize)> = HashSet::new();
+    let mut g_score: HashMap<(usize, usize), i32> = HashMap::new();
+
+    let mut came_from: HashMap<(usize, usize), i32> = HashMap::new();
+
+    let mut start: (usize, usize);
+
+    let mut goal: (usize, usize) = (0, 0); // would change to option later
+
+    let mut solve = false;
 
     for x in 0..GRID_W {
         for y in 0..GRID_H {
@@ -60,18 +81,41 @@ async fn main() {
             let index = gx * GRID_H + gy;
 
             if let Some(select_state) = app_state.get_state()
-                && is_mouse_button_down(MouseButton::Left)
+                && is_mouse_button_released(MouseButton::Left)
             {
                 match select_state {
                     CellState::Empty => cells[index].set_state(CellState::Empty),
-                    CellState::Start => cells[index].set_state(CellState::Start),
-                    CellState::Goal => cells[index].set_state(CellState::Goal),
+                    CellState::Start => {
+                        start = (gx, gy);
+
+                        // println!("{:?}", start);
+
+                        open.push(NodeCost { pos: start, f: 0 });
+
+                        println!("{:?}", open);
+                        g_score.insert(start, 0);
+                        cells[index].set_state(CellState::Start);
+                    }
+                    CellState::Goal => {
+                        goal = (gx, gy);
+                        cells[index].set_state(CellState::Goal);
+                    }
                     CellState::Wall => cells[index].set_state(CellState::Wall),
                     _ => {}
                 }
             }
 
             if cells[index].state() == &CellState::Empty {}
+        }
+
+        // A* algoritm
+        //
+        //
+
+        if solve {
+            let current = open.pop().unwrap().pos;
+
+            if current == goal {}
         }
 
         draw_text("PathFinder", 20.0, 20.0, 30.0, WHITE);
@@ -123,4 +167,50 @@ async fn main() {
 
         next_frame().await;
     }
+}
+
+fn neighbors_of(pos: (usize, usize), cells: &Vec<Cell>) -> Vec<(usize, usize)> {
+    let index = pos.0 * GRID_H + pos.1;
+
+    let index_top_left = index - GRID_H - 1;
+    let index_top_mid = index - GRID_H;
+    let index_top_right = index - GRID_H + 1;
+    let index_left = index - 1;
+    let index_right = index + 1;
+    let index_btm_left = index + GRID_H - 1;
+    let index_btm_mid = index + GRID_H;
+    let index_btm_right = index + GRID_H + 1;
+
+    let top_left = (
+        cells[index_top_left].width(),
+        cells[index_top_left].height(),
+    );
+
+    let top_mid = (cells[index_top_mid].width(), cells[index_top_mid].height());
+
+    let top_right = (
+        cells[index_top_right].width(),
+        cells[index_top_right].height(),
+    );
+
+    let left = (cells[index_left].width(), cells[index_left].height());
+
+    let right = (cells[index_right].width(), cells[index_right].height());
+
+    let btm_left = (
+        cells[index_btm_left].width(),
+        cells[index_btm_left].height(),
+    );
+
+    let btm_mid = (cells[index_btm_mid].width(), cells[index_btm_mid].height());
+    let btm_right = (
+        cells[index_btm_right].width(),
+        cells[index_btm_right].height(),
+    );
+
+    let neighbors: Vec<(usize, usize)> = vec![
+        top_left, top_mid, top_right, left, right, btm_left, btm_mid, btm_right,
+    ];
+
+    neighbors
 }
