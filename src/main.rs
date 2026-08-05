@@ -25,7 +25,7 @@ async fn main() {
     let mut closed: HashSet<(usize, usize)> = HashSet::new();
     let mut g_score: HashMap<(usize, usize), i32> = HashMap::new();
 
-    let mut came_from: HashMap<(usize, usize), i32> = HashMap::new();
+    let mut came_from: HashMap<(usize, usize), (usize, usize)> = HashMap::new();
 
     let mut start: (usize, usize);
 
@@ -120,7 +120,23 @@ async fn main() {
             for neighbour in neighbors_of(current, &cells) {
                 let neighbour = neighbour;
 
-                let tentative_g = g_score[&current] + step_cost(current, neighbor);
+                let tentative_g = g_score[&current] + step_cost(current, neighbour);
+
+                let is_better = match g_score.get(&neighbour) {
+                    Some(&existing_g) => tentative_g < existing_g,
+                    None => true,
+                };
+
+                if is_better {
+                    came_from.insert(neighbour, current);
+                    g_score.insert(neighbour, tentative_g);
+
+                    let h = heuristic(neighbour, goal);
+
+                    let f = tentative_g + h;
+
+                    open.push(NodeCost { pos: neighbour, f });
+                }
             }
         }
 
@@ -181,6 +197,16 @@ fn step_cost(current: (usize, usize), neighbour: (usize, usize)) -> i32 {
     } else {
         10
     }
+}
+
+fn heuristic(pos: (usize, usize), goal: (usize, usize)) -> i32 {
+    let dx = (pos.0 as i32 - goal.0 as i32).abs();
+    let dy = (pos.1 as i32 - goal.1 as i32).abs();
+
+    let straight = 10;
+    let diagonal = 14;
+
+    straight * (dx + dy) + (diagonal - 2 * straight) * dx.min(dy)
 }
 
 fn neighbors_of(pos: (usize, usize), cells: &Vec<Cell>) -> Vec<(usize, usize)> {
