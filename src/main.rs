@@ -116,6 +116,12 @@ async fn main() {
             let current = open.pop().unwrap().pos;
 
             if current == goal {}
+
+            for neighbour in neighbors_of(current, &cells) {
+                let neighbour = neighbour;
+
+                let tentative_g = g_score[&current] + step_cost(current, neighbor);
+            }
         }
 
         draw_text("PathFinder", 20.0, 20.0, 30.0, WHITE);
@@ -166,6 +172,14 @@ async fn main() {
         }
 
         next_frame().await;
+    }
+}
+
+fn step_cost(current: (usize, usize), neighbour: (usize, usize)) -> i32 {
+    if current.0 != neighbour.0 && neighbour.1 != current.1 {
+        14
+    } else {
+        10
     }
 }
 
