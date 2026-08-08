@@ -10,7 +10,11 @@ Press H for help
 
 ![Pathfinder Help](images/pathfinder_help.png)
 
-Hold corresponding letter and drag or click to set
+on linux run
+`release/pathfinder`
+or build from source
+`cargo build`
+Press and hold corresponding letter and drag or click to set
 
 W - Create walls
 H - Help
