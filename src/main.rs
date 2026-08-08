@@ -81,7 +81,7 @@ async fn main() {
             let index = gx * GRID_H + gy;
 
             if let Some(select_state) = app_state.get_state()
-                && is_mouse_button_released(MouseButton::Left)
+                && is_mouse_button_down(MouseButton::Left)
             {
                 match select_state {
                     CellState::Empty => cells[index].set_state(CellState::Empty),
@@ -151,32 +151,37 @@ async fn main() {
             for neighbour in neighbors_of(current, &cells) {
                 let neighbour = neighbour;
 
-                let index = neighbour.0 * GRID_H + neighbour.1;
+                match neighbour {
+                    Some(neighbour) => {
+                        let index = neighbour.0 * GRID_H + neighbour.1;
 
-                if *cells[index].state() == CellState::Wall {
-                    continue;
-                }
+                        if *cells[index].state() == CellState::Wall {
+                            continue;
+                        }
 
-                if closed.contains(&neighbour) {
-                    continue;
-                }
+                        if closed.contains(&neighbour) {
+                            continue;
+                        }
 
-                let tentative_g = g_score[&current] + step_cost(current, neighbour);
+                        let tentative_g = g_score[&current] + step_cost(current, neighbour);
 
-                let is_better = match g_score.get(&neighbour) {
-                    Some(&existing_g) => tentative_g < existing_g,
-                    None => true,
-                };
+                        let is_better = match g_score.get(&neighbour) {
+                            Some(&existing_g) => tentative_g < existing_g,
+                            None => true,
+                        };
 
-                if is_better {
-                    came_from.insert(neighbour, current);
-                    g_score.insert(neighbour, tentative_g);
+                        if is_better {
+                            came_from.insert(neighbour, current);
+                            g_score.insert(neighbour, tentative_g);
 
-                    let h = heuristic(neighbour, goal);
+                            let h = heuristic(neighbour, goal);
 
-                    let f = tentative_g + h;
+                            let f = tentative_g + h;
 
-                    open.push(NodeCost { pos: neighbour, f });
+                            open.push(NodeCost { pos: neighbour, f });
+                        }
+                    }
+                    None => {}
                 }
             }
 
