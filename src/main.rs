@@ -120,6 +120,7 @@ async fn main() {
             let current = open.pop().unwrap().pos;
 
             if current == goal {
+                solve = false;
                 let mut path = vec![current];
 
                 let mut node = current;
