@@ -92,7 +92,7 @@ async fn main() {
 
                         open.push(NodeCost { pos: start, f: 0 });
 
-                        println!("{:?}", open);
+                        // println!("{:?}", open);
                         g_score.insert(start, 0);
                         cells[index].set_state(CellState::Start);
                     }
