@@ -111,6 +111,10 @@ async fn main() {
         // A* algoritm
         //
         //
+        //
+        if is_key_released(KeyCode::Space) {
+            solve = !solve;
+        }
 
         if solve {
             let current = open.pop().unwrap().pos;
@@ -136,10 +140,26 @@ async fn main() {
                         cells[index].set_state(CellState::Path);
                     }
                 }
+            } else {
+                let index = current.0 * GRID_H + current.1;
+
+                if *cells[index].state() != CellState::Start {
+                    cells[index].set_state(CellState::Empty);
+                }
             }
 
             for neighbour in neighbors_of(current, &cells) {
                 let neighbour = neighbour;
+
+                let index = neighbour.0 * GRID_H + neighbour.1;
+
+                if *cells[index].state() == CellState::Wall {
+                    continue;
+                }
+
+                if closed.contains(&neighbour) {
+                    continue;
+                }
 
                 let tentative_g = g_score[&current] + step_cost(current, neighbour);
 
@@ -232,7 +252,7 @@ fn heuristic(pos: (usize, usize), goal: (usize, usize)) -> i32 {
     straight * (dx + dy) + (diagonal - 2 * straight) * dx.min(dy)
 }
 
-fn neighbors_of(pos: (usize, usize), cells: &Vec<Cell>) -> Vec<(usize, usize)> {
+fn neighbors_of(pos: (usize, usize), cells: &Vec<Cell>) -> Vec<Option<(usize, usize)>> {
     let index = pos.0 * GRID_H + pos.1;
 
     let index_top_left = index - GRID_H - 1;
@@ -244,34 +264,47 @@ fn neighbors_of(pos: (usize, usize), cells: &Vec<Cell>) -> Vec<(usize, usize)> {
     let index_btm_mid = index + GRID_H;
     let index_btm_right = index + GRID_H + 1;
 
-    let top_left = (
-        cells[index_top_left].width(),
-        cells[index_top_left].height(),
-    );
+    let top_left = match cells.get(index_top_left) {
+        Some(c) => Some((c.width(), c.height())),
+        None => None,
+    };
 
-    let top_mid = (cells[index_top_mid].width(), cells[index_top_mid].height());
+    let top_mid = match cells.get(index_top_mid) {
+        Some(c) => Some((c.width(), c.height())),
+        None => None,
+    };
 
-    let top_right = (
-        cells[index_top_right].width(),
-        cells[index_top_right].height(),
-    );
+    let top_right = match cells.get(index_top_right) {
+        Some(c) => Some((c.width(), c.height())),
+        None => None,
+    };
 
-    let left = (cells[index_left].width(), cells[index_left].height());
+    let left = match cells.get(index_left) {
+        Some(c) => Some((c.width(), c.height())),
+        None => None,
+    };
 
-    let right = (cells[index_right].width(), cells[index_right].height());
+    let right = match cells.get(index_right) {
+        Some(c) => Some((c.width(), c.height())),
+        None => None,
+    };
 
-    let btm_left = (
-        cells[index_btm_left].width(),
-        cells[index_btm_left].height(),
-    );
+    let btm_left = match cells.get(index_btm_left) {
+        Some(c) => Some((c.width(), c.height())),
+        None => None,
+    };
 
-    let btm_mid = (cells[index_btm_mid].width(), cells[index_btm_mid].height());
-    let btm_right = (
-        cells[index_btm_right].width(),
-        cells[index_btm_right].height(),
-    );
+    let btm_mid = match cells.get(index_btm_mid) {
+        Some(c) => Some((c.width(), c.height())),
+        None => None,
+    };
 
-    let neighbors: Vec<(usize, usize)> = vec![
+    let btm_right = match cells.get(index_btm_right) {
+        Some(c) => Some((c.width(), c.height())),
+        None => None,
+    };
+
+    let neighbors: Vec<Option<(usize, usize)>> = vec![
         top_left, top_mid, top_right, left, right, btm_left, btm_mid, btm_right,
     ];
 

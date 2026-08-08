@@ -1,6 +1,6 @@
 use std::ops::Not;
 
-use macroquad::color::{BLUE, BROWN, Color, GREEN, LIGHTGRAY, YELLOW};
+use macroquad::color::{BLUE, BROWN, Color, GREEN, LIGHTGRAY, ORANGE, YELLOW};
 
 #[derive(Debug, Clone)]
 pub struct Cell {
@@ -42,6 +42,8 @@ pub enum CellState {
     Goal,
     Wall,
     Path,
+
+    Visited,
 }
 
 impl CellState {
@@ -52,6 +54,7 @@ impl CellState {
             CellState::Goal => YELLOW,
             CellState::Wall => BROWN,
             CellState::Path => BLUE,
+            CellState::Visited => ORANGE,
         }
     }
 }
